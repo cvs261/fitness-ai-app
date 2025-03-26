@@ -1,0 +1,20 @@
+version: '3.9'
+
+services:
+  backend:
+    build: ./backend
+    container_name: fitness-backend
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - FLASK_ENV=development
+  
+  frontend:
+    build: ./frontend
+    container_name: fitness-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
