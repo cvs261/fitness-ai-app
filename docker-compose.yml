@@ -10,7 +10,10 @@ services:
       - ./backend:/app
     environment:
       - FLASK_ENV=development
-  
+      - SQLALCHEMY_DATABASE_URI=mysql://fitness_user:fitness_pass@db/fitness_db
+    depends_on:
+      - db
+
   frontend:
     build: ./frontend
     container_name: fitness-frontend
@@ -18,3 +21,20 @@ services:
       - "3000:3000"
     depends_on:
       - backend
+
+  db:
+    image: mariadb:10.9
+    container_name: fitness-db
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpass
+      MARIADB_DATABASE: fitness_db
+      MARIADB_USER: fitness_user
+      MARIADB_PASSWORD: fitness_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
