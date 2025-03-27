@@ -1,75 +1,77 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from flask import request, jsonify
 import joblib
 import numpy as np
 from models import RecommendationLog
-
-app = Flask(__name__)
-CORS(app)
+from extensions import db
+import pandas as pd
 
 # Load model and encoders
 model = joblib.load("ai/workout_model.joblib")
 gender_encoder = joblib.load("ai/gender_encoder.joblib")
-# goal_encoder = joblib.load("ai/goal_encoder.joblib")
-# body_type_encoder = joblib.load("ai/body_type_encoder.joblib")
-experience_encoder = joblib.load("ai/experience_encoder.joblib")
 workout_encoder = joblib.load("ai/workout_encoder.joblib")
 
-@app.route("/api/recommend", methods=["POST"])
-def recommend():
-    data = request.json
+def recommend(app):
+    @app.route("/api/recommend", methods=["POST"])
+    def recommend_workout():
+        data = request.json
 
-    try:
-        # Encode categorical variables
-        gender_encoded = gender_encoder.transform([data["Gender"]])[0]
-        #goal_encoded = goal_encoder.transform([data["Goal"]])[0]
-        #body_type_encoded = body_type_encoder.transform([data["Body_Type"]])[0]
-        experience_encoded = experience_encoder.transform([data["Experience_Level"]])[0]
+        try:
+            # Encode categorical variable
+            gender_encoded = gender_encoder.transform([data["Gender"]])[0]
+            experience_encoded = data["Experience_Level"]
 
-        # Create feature vector
-        features = [
-            data["Age"],
-            gender_encoded,
-            data["Weight (kg)"],
-            data["Height (m)"],
-            data["Max_BPM"],
-            data["Avg_BPM"],
-            data["Resting_BPM"],
-            data["Session_Duration (hours)"],
-            data["Calories_Burned"],
-            data["Fat_Percentage"],
-            data["Water_Intake (liters)"],
-            data["Workout_Frequency (days/week)"],
-            experience_encoded,
-            data["BMI"]
-        ]
 
-        features = np.array(features).reshape(1, -1)
+            # Feature vector (simplified - without Goal and Body_Type)
+            features = [
+                data["Age"],
+                gender_encoded,
+                data["Weight (kg)"],
+                data["Height (m)"],
+                data["Max_BPM"],
+                data["Avg_BPM"],
+                data["Resting_BPM"],
+                data["Session_Duration (hours)"],
+                data["Calories_Burned"],
+                data["Fat_Percentage"],
+                data["Water_Intake (liters)"],
+                data["Workout_Frequency (days/week)"],
+                experience_encoded,
+                data["BMI"]
+            ]
 
-        # Predict and decode the result
-        prediction = model.predict(features)[0]
-        workout_type = workout_encoder.inverse_transform([prediction])[0]
+            input_df = pd.DataFrame([features], columns=[
+                "Age", "Gender", "Weight (kg)", "Height (m)", "Max_BPM", "Avg_BPM", "Resting_BPM",
+                "Session_Duration (hours)", "Calories_Burned", "Fat_Percentage", "Water_Intake (liters)",
+                "Workout_Frequency (days/week)", "Experience_Level", "BMI"
+            ])
 
-        return jsonify({"recommended_workout": workout_type})
+            prediction = model.predict(input_df)[0]
+            workout_type = workout_encoder.inverse_transform([prediction])[0]
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
-    
+            # Save to DB
+            log = RecommendationLog(
+                age=data["Age"],
+                gender=data["Gender"],
+                result=workout_type
+            )
+            db.session.add(log)
+            db.session.commit()
 
-@app.route("/api/history", methods=["GET"])
-def get_history():
-    try:
-        logs = RecommendationLog.query.all()
-        history = [{
-            "id": log.id,
-            "age": log.age,
-            "gender": log.gender,
-            "result": log.result
-        } for log in logs]
-        return jsonify(history)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
+            return jsonify({"recommended_workout": workout_type})
 
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+        except Exception as e:
+            return jsonify({"error": str(e)}), 400
+
+    @app.route("/api/history", methods=["GET"])
+    def get_history():
+        try:
+            logs = RecommendationLog.query.all()
+            history = [{
+                "id": log.id,
+                "age": log.age,
+                "gender": log.gender,
+                "result": log.result
+            } for log in logs]
+            return jsonify(history)
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500

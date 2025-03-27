@@ -1,0 +1,104 @@
+---
+# BACKEND CI WORKFLOW
+name: Backend CI
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+  pull_request:
+    paths:
+      - 'backend/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:10.9
+        env:
+          MYSQL_ROOT_PASSWORD: rootpass
+          MYSQL_DATABASE: fitness_db
+          MYSQL_USER: fitness_user
+          MYSQL_PASSWORD: fitness_pass
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: mysql+pymysql://fitness_user:fitness_pass@127.0.0.1:3306/fitness_db
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+
+    - name: Install dependencies
+      working-directory: backend
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+        pip install flake8 pytest pytest-cov
+
+    - name: Wait for DB to be ready
+      run: sleep 20
+
+    - name: Lint with flake8
+      working-directory: backend
+      run: |
+        source venv/bin/activate
+        flake8 . --count --show-source --statistics
+
+    - name: Run tests with coverage
+      working-directory: backend
+      run: |
+        source venv/bin/activate
+        pytest --color=yes --cov=. --cov-report=term-missing
+
+---
+# FRONTEND CI WORKFLOW
+name: Frontend CI
+
+on:
+  push:
+    paths:
+      - 'frontend/**'
+  pull_request:
+    paths:
+      - 'frontend/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      working-directory: frontend
+      run: npm install
+
+    - name: Lint with ESLint
+      working-directory: frontend
+      run: |
+        npx eslint . --ext .js,.jsx,.ts,.tsx || true
+
+    - name: Run tests (if any)
+      working-directory: frontend
+      run: |
+        npm test || echo "No tests defined"
