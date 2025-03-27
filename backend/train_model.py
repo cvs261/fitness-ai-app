@@ -38,8 +38,8 @@ model.fit(X_train, y_train)
 
 # Save model and encoders
 os.makedirs("ai", exist_ok=True)
-joblib.dump(model, "ai/workout_model.joblib")
-joblib.dump(gender_encoder, "ai/gender_encoder.joblib")
-joblib.dump(workout_encoder, "ai/workout_encoder.joblib")
+joblib.dump(model, "backend/ai/workout_model.joblib")
+joblib.dump(gender_encoder, "backend/ai/gender_encoder.joblib")
+joblib.dump(workout_encoder, "backend/ai/workout_encoder.joblib")
 
 print("Model and encoders trained and saved to 'ai/' folder.")
