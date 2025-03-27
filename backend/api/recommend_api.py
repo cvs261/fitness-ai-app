@@ -1,27 +1,37 @@
 from flask import request, jsonify
 import joblib
 import numpy as np
+import pandas as pd
 from models import RecommendationLog
 from extensions import db
-import pandas as pd
 
-# Load model and encoders
-model = joblib.load("ai/workout_model.joblib")
-gender_encoder = joblib.load("ai/gender_encoder.joblib")
-workout_encoder = joblib.load("ai/workout_encoder.joblib")
+# Lazy load model and encoders
+model = None
+gender_encoder = None
+workout_encoder = None
+
+def load_assets():
+    global model, gender_encoder, workout_encoder
+    if model is None or gender_encoder is None or workout_encoder is None:
+        try:
+            model = joblib.load("backend/ai/workout_model.joblib")
+            gender_encoder = joblib.load("backend/ai/gender_encoder.joblib")
+            workout_encoder = joblib.load("backend/ai/workout_encoder.joblib")
+        except FileNotFoundError as e:
+            raise RuntimeError(f"Model or encoder file not found: {e}")
 
 def recommend(app):
     @app.route("/api/recommend", methods=["POST"])
     def recommend_workout():
-        data = request.json
-
         try:
+            load_assets()  # ensure model and encoders are loaded
+
+            data = request.json
+
             # Encode categorical variable
             gender_encoded = gender_encoder.transform([data["Gender"]])[0]
             experience_encoded = data["Experience_Level"]
 
-
-            # Feature vector (simplified - without Goal and Body_Type)
             features = [
                 data["Age"],
                 gender_encoded,

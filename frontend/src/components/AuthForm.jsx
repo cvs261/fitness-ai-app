@@ -3,7 +3,6 @@ import './AuthForm.css';
 
 export default function AuthForm ({ type = 'login', onAuth }) {
     const [formData, setFormData] = useState({
-        username: '',
         email: '',
         password: '',
     });
@@ -16,7 +15,7 @@ export default function AuthForm ({ type = 'login', onAuth }) {
         e.preventDefault();
         const endpoint = type === 'register' ? '/api/register' : '/api/login';
         const payload = {
-            username: formData.username,
+            email: formData.email,
             password: formData.password
         };
         if (type === 'register') payload.email = formData.email;

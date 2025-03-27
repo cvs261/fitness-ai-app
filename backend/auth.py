@@ -6,7 +6,7 @@ auth_bp = Blueprint("auth", __name__)
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
-    data = request.get_json
+    data = request.get_json()
     email = data.get("email")
     password = data.get("password")
 
@@ -23,11 +23,11 @@ def register():
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    data = request.get_json
+    data = request.get_json()
     email = data.get("email")
     password = data.get("password")
 
-    user = User.query.filter_by(email=email).first
+    user = User.query.filter_by(email=email).first()
     if user and check_password_hash(user.password, password):
         session["user_id"] = user.id
         return jsonify({"message": "Logged successfully"}), 200
