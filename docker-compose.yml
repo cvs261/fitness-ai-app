@@ -10,7 +10,7 @@ services:
       - ./backend:/app
     environment:
       - FLASK_ENV=development
-      - SQLALCHEMY_DATABASE_URI=mysql://fitness_user:fitness_pass@db/fitness_db
+      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://fitness_user:fitness_pass@db/fitness_db
     depends_on:
       - db
 

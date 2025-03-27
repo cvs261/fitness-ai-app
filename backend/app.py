@@ -22,7 +22,7 @@ if env == "testing" or app.config.get("TESTING"):
 else:
     DB_USER = os.getenv("DB_USER", "fitness_user")
     DB_PASS = os.getenv("DB_PASS", "fitness_pass")
-    DB_HOST = os.getenv("DB_HOST", "localhost")
+    DB_HOST = os.getenv("DB_HOST", "db")
     DB_PORT = os.getenv("DB_PORT", "3306")
     DB_NAME = os.getenv("DB_NAME", "fitness_db")
 

@@ -1,8 +1,11 @@
 import React from 'react';
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom';
 import './AuthForm.css';
 
-export default function AuthForm ({ type = 'login', onAuth }) {
+export default function AuthForm (onAuth) {
+    const location = useLocation();
+    const type = location.pathname.includes('register') ? 'register' : 'login';
     const [formData, setFormData] = useState({
         email: '',
         password: '',
