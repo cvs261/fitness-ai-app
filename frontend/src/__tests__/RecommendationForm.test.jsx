@@ -1,4 +1,6 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom'
 import RecommendationForm from '../components/RecommandationForm';
 
 test('renders recommendation form', () => {
