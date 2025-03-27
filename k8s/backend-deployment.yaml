@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fitness-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fitness-backend
+  template:
+    metadata:
+      labels:
+        app: fitness-backend
+    spec:
+      containers:
+      - name: backend
+        image: fitness-ai-app-backend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+        env:
+        - name: DB_HOST
+          value: mariadb
