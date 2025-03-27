@@ -5,6 +5,7 @@ export default function AuthForm ({ type = 'login', onAuth }) {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
+        username: ''
     });
 
     const handleChange = (e) => {
