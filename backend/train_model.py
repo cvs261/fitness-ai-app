@@ -37,7 +37,7 @@ model = RandomForestClassifier(n_estimators=100, random_state=42)
 model.fit(X_train, y_train)
 
 # Save model and encoders
-os.makedirs("ai", exist_ok=True)
+os.makedirs("backend/ai", exist_ok=True)
 joblib.dump(model, "backend/ai/workout_model.joblib")
 joblib.dump(gender_encoder, "backend/ai/gender_encoder.joblib")
 joblib.dump(workout_encoder, "backend/ai/workout_encoder.joblib")
