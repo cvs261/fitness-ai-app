@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import AuthForm from './components/AuthForm';
 import RecommendationForm from './components/RecommandationForm';
 
+
 function App() {
   return (
     <Router>
