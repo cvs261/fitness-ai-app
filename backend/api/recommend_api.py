@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import joblib
 import numpy as np
+from models import RecommendationLog
 
 app = Flask(__name__)
 CORS(app)
@@ -53,6 +54,22 @@ def recommend():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+    
+
+@app.route("/api/history", methods=["GET"])
+def get_history():
+    try:
+        logs = RecommendationLog.query.all()
+        history = [{
+            "id": log.id,
+            "age": log.age,
+            "gender": log.gender,
+            "result": log.result
+        } for log in logs]
+        return jsonify(history)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
