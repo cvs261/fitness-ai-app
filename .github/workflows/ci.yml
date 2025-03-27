@@ -51,6 +51,12 @@ jobs:
     - name: Wait for DB to be ready
       run: sleep 20
 
+    - name: Train AI model
+      working-directory: backend
+      run: |
+        source venv/bin/activate
+        python train_model.py
+
     - name: Run tests with coverage
       working-directory: backend
       run: |
